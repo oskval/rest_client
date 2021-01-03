@@ -1,0 +1,182 @@
+@{
+    ViewBag.Title = "Command";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+
+<h3>Add a Command</h3>
+<form class="form-inline">
+
+    <div class="form-group" style="display:none;">
+        <input id="txtCommandId" class="form-control" name="Id"/>
+    </div>
+
+    <div class="form-group">
+        <label for="HowTo">HowTo:</label>
+        <input id="txtCommandHowTo" class="form-control" name="HowTo"/>
+    </div>
+
+    <div class="form-group">
+        <label for="Line">Line:</label>
+        <input id="txtCommandLine" class="form-control" name="Line"/>
+    </div>
+
+    <div class="form-group">
+        <label for="Platform">Platform:</label>
+        <input id="txtCommandPlatform" class="form-control" name="Platform"/>
+    </div>
+
+    <div class="text-center panel_body">
+        <button id="btnSave" class="btn btn-sm btn-primary">Save</button>
+    </div>
+</form>
+
+<hr>
+
+<h3>Patch a Command</h3>
+<form class="form-inline">
+
+    <div class="form-group">
+        <label for="Op">Operation:</label>
+        <input id="txtCommandOp" class="form-control" name="Op"/>
+    </div>
+
+    <div class="form-group">
+        <label for="Path">Path:</label>
+        <input id="txtCommandPath" class="form-control" name="Path"/>
+    </div>
+
+    <div class="form-group">
+        <label for="Value">Value:</label>
+        <input id="txtCommandValue" class="form-control" name="Value"/>
+    </div>
+
+</form>
+
+<hr>
+
+<h3>Put a Command</h3>
+<form class="form-inline">
+
+    <div class="form-group" style="display:none;">
+        <input id="txtCommandPutId" class="form-control" name="PutId"/>
+    </div>
+
+    <div class="form-group">
+        <label for="PutHowTo">HowTo:</label>
+        <input id="txtCommandPutHowTo" class="form-control" name="PutHowTo"/>
+    </div>
+
+    <div class="form-group">
+        <label for="PutLine">Line:</label>
+        <input id="txtCommandPutLine" class="form-control" name="PutLine"/>
+    </div>
+
+    <div class="form-group">
+        <label for="PutPlatform">Platform:</label>
+        <input id="txtCommandPutPlatform" class="form-control" name="PutPlatform"/>
+    </div>
+
+</form>
+
+<hr>
+<button onclick="GetAllCommands()" class="btn btn-primary">Load Commands</button>
+
+<h2>Command List</h2>
+<table id="tblCommand" class="table table-sm table-striped table-bordered m-2">
+    <thead>
+        <tr>
+            <th>Command Id</th>
+            <th>HowTo</th>
+            <th>Line</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script type="text/javascript">
+    $(document).ready(function(){
+
+    });
+
+    function GetAllCommands() {
+        $.getJSON("/Commands/GetAllCommands", function(commands) {
+            $("#tblCommand tbody tr").remove();
+            $.map(commands, function(command) {
+                $("#tblCommand tbody").append("<tr>"
+                    + " <td>" + command.id + "</td>"
+                    + " <td>" + command.howTo + "</td>"
+                    + " <td>" + command.line + "</td>"
+                    + " <td>"
+                    + "         <button class='btn-success' onclick='Put(" + command.id + ")'style='margin-right:5px;'>Put</button>"
+                    + "         <button class='btn-success' onclick='Patch(" + command.id + ")'>Patch</button>"
+                    + "         <button class='btn-danger' onclick='Delete(" + command.id + ")'>Delete</button>"
+                    + " </td> "
+                    + " </tr>");
+            });
+        });
+    }
+
+   
+    function Put(id) {
+       var oCommand = {
+            Id: $("#txtCommandPutId").val(),
+            HowTo: $("#txtCommandPutHowTo").val(),
+            Line: $("#txtCommandPutLine").val(),
+            Platform: $("#txtCommandPutPlatform").val()
+        };
+
+       $.ajax({
+           url: '/Commands/Put',
+           data: {commandId: id, command: oCommand},
+           type: 'PUT',
+           dataType: 'json'
+       });
+      
+    }
+
+    function Patch(id) {
+       var patch = {
+           op: $("#txtCommandOp").val(),
+           path: $("#txtCommandPath").val(),
+           value: $("#txtCommandValue").val()
+           };
+
+        $.ajax({
+            url: '/Commands/Patch',
+            data: {commandId: id, command: patch},
+            type: 'PATCH',
+            dataType: 'json'
+        });
+    }
+   
+
+    function Delete(id) {
+        if (id > 0 ) {
+           $.ajax({
+               url: '/Commands/Delete?commandId=' + id,
+               type: 'DELETE',
+               dataType: 'json'
+           });
+        }
+    }
+
+    $("#btnSave").click(function () {
+        var oCommand = {
+            Id: $("#txtCommandId").val(),
+            HowTo: $("#txtCommandHowTo").val(),
+            Line: $("#txtCommandLine").val(),
+            Platform: $("#txtCommandPlatform").val()
+
+        };
+
+        $.post("/Commands/AddUpdateCommand", oCommand)
+            .done(function (data) {
+            GetAllCommands()
+        });
+    });
+
+
+</script>
